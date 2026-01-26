@@ -4,11 +4,11 @@ A progressive web app (PWA) for improv comedy practice, built with a modular arc
 
 ## What is Improvisator?
 
-Improvisator provides a collection of improv games and exercises for comedians and performers to practice their craft. Whether you're using the web app or the mobile app, you get the same high-quality experience with access to all games and features.
+Improvisator provides a collection of improv games and exercises for comedians and performers to practice their craft. The web app and mobile app use the same core game logic.
 
 ## Architecture: Shared Code Between PWA and Mobile
 
-This project uses a **monorepo structure** with a shared core library. This approach ensures that business logic, game mechanics, and utilities are written once and used everywhere.
+This project uses a **monorepo structure** with a shared core library. Business logic, game mechanics, and utilities are written once and used by both platforms.
 
 ### Structure
 
@@ -131,18 +131,17 @@ import { HeadlineGame } from '@improvisator/core';
 
 ### Why Docker?
 
-- **Consistent environments**: Same Node version, same dependencies everywhere
-- **No local setup**: Don't need Node.js installed on your machine
+- **Consistent environments**: Same Node version and dependencies across machines
+- **No local setup**: Node.js not required on host machine
 - **Isolated**: Project dependencies don't conflict with other projects
-- **Production-like**: Develop in an environment similar to deployment
+- **Production-like**: Development environment matches deployment
 
 ## Development Philosophy
 
-This project follows simple, pragmatic principles:
-- **Keep it simple**: Choose straightforward solutions over complex architectures
-- **Modularity**: Business logic is always separated from UI
-- **Reusability**: Don't repeat game mechanics or utilities across platforms
-- **Platform-agnostic core**: The `core/` package has zero UI framework dependencies
+- **Keep it simple**: Prefer straightforward solutions
+- **Modularity**: Separate business logic from UI
+- **Reusability**: Don't duplicate game mechanics or utilities
+- **Platform-agnostic core**: The `core/` package has no UI framework dependencies
 
 See [.copilot-instructions](.copilot-instructions) for detailed guidelines on where code should live and how to make architectural decisions.
 
@@ -153,7 +152,7 @@ See [.copilot-instructions](.copilot-instructions) for detailed guidelines on wh
 docker-compose exec improvisator npm run build:web
 ```
 
-The output in `web/dist/` is a static site ready to be deployed to any static hosting service (Netlify, Vercel, GitHub Pages, etc.). The service worker and manifest ensure it works offline and can be installed as an app.
+The output in `web/dist/` is a static site. The service worker and manifest enable offline functionality and installation.
 
 ### Mobile
 ```bash
@@ -165,10 +164,10 @@ docker-compose exec improvisator npm run build:mobile
 ## Contributing
 
 When adding new games or features:
-1. **Game logic goes in `core/`** - This ensures both platforms get the feature
+1. **Game logic goes in `core/`** - Both platforms use this
 2. **UI goes in `web/` or `mobile/`** - Platform-specific implementations
-3. **Utilities go in `core/`** - Even if only used by one platform now, it might be useful later
-4. Keep `core/` framework-agnostic and thoroughly tested
+3. **Utilities go in `core/`** - Even if only one platform uses it now
+4. Keep `core/` framework-agnostic and tested
 
 ## License
 
