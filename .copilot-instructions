@@ -1,0 +1,169 @@
+# Copilot Instructions for Improvisator
+
+## Core Principles
+
+1. **Docker-First Development**: All development and deployment happens in Docker containers. Never run `npm install` or `npm run dev` directly on the host.
+2. **Prefer Simple Solutions**: Always choose the simplest approach that meets requirements. Avoid over-engineering.
+3. **Modularity First**: All business logic, utilities, and game mechanics must be framework-agnostic.
+4. **Shared Code Philosophy**: Code that isn't UI-specific should live in `core/` so it works in both PWA and React Native.
+5. **Separation of Concerns**: Keep UI (React/React Native) separate from logic (core).
+
+## Development Environment
+
+### Docker Setup (REQUIRED)
+
+**All development uses Docker**. The project runs inside a container with the current directory mounted to `/app`.
+
+**Start development**:
+```bash
+docker-compose up
+```
+
+This starts the dev server at `http://localhost:54321`
+
+**Run commands in the container**:
+```bash
+docker-compose exec improvisator npm run test
+docker-compose exec improvisator npm run lint
+docker-compose exec improvisator npm run build
+```
+
+**Rebuild container after dependency changes**:
+```bash
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
+```
+
+**Never run npm directly on host** - always use `docker-compose exec` or let docker-compose handle it.
+
+## Architecture Guidelines
+
+### Directory Structure
+- `core/` - Framework-agnostic business logic, game rules, utilities (used by both PWA and mobile)
+- `web/` - PWA (React + Vite or similar)
+- `mobile/` - React Native application (Expo or React Native CLI)
+- `Dockerfile` - Development container setup
+- `docker-compose.yml` - Container orchestration with volume mounts
+
+### What Goes Where
+
+**Core** (framework-agnostic, pure JavaScript/TypeScript):
+- Game rules and mechanics
+- Data models
+- Algorithms
+- Utilities
+- Constants
+- Validation logic
+
+**Web** (PWA specific):
+- React components
+- UI/UX specific code
+- Web service workers
+- Web manifest
+- Platform-specific APIs (geolocation, camera, etc. as needed)
+
+**Mobile** (React Native specific):
+- React Native components
+- Native module integrations
+- Platform-specific navigation
+- Mobile-specific APIs
+
+## Coding Practices
+
+1. **Import pattern**: `import { GameRules } from '@improvisator/core'`
+2. **No framework imports in core**: Don't import React, React Native, or any UI library in `core/`
+3. **Keep it lean**: Avoid unused dependencies; prefer built-in JavaScript methods
+4. **Interface over implementation**: Use TypeScript interfaces to make code portable
+5. **Test everything**: All code must have tests before it's considered complete
+
+## Testing Standards
+
+### Philosophy
+- **Test the logic, not the implementation**: Test what the code does, not how it does it
+- **Core logic gets unit tests**: Everything in `core/` must have 100% line coverage
+- **Components get integration tests**: Test how components behave with user interaction
+- **Keep tests simple**: Each test should verify one thing
+- **Descriptive test names**: Test names should clearly state what they're testing
+
+### Test Structure
+
+**File organization**:
+- Place test files next to the code they test
+- File naming: `MyComponent.tsx` → `MyComponent.test.tsx` or `myFunction.ts` → `myFunction.test.ts`
+
+**Test format** (using Vitest or Jest):
+```typescript
+import { describe, it, expect } from 'vitest';
+import { HeadlineGame } from './HeadlineGame';
+
+describe('HeadlineGame', () => {
+  it('should generate a headline from the list', () => {
+    const game = new HeadlineGame(['headline 1', 'headline 2']);
+    const result = game.generateHeadline();
+    expect(['headline 1', 'headline 2']).toContain(result);
+  });
+
+  it('should validate positive scores', () => {
+    const game = new HeadlineGame([]);
+    expect(game.validateScore(50)).toBe(true);
+    expect(game.validateScore(-1)).toBe(false);
+    expect(game.validateScore(101)).toBe(false);
+  });
+});
+```
+
+### Where to Test
+
+**Core Package** (`core/`):
+- ✅ Unit tests for all functions, classes, and exports
+- ✅ Test edge cases (empty lists, invalid inputs, boundaries)
+- ✅ Use Vitest (lightweight, fast, ESM-first)
+- ✅ Aim for 100% coverage
+
+**Web Package** (`web/`docker-compose exec improvisator npm run test`
+- [ ] Core package has >90% coverage: `docker-compose exec improvisator npm run test:coverage`
+- [ ] Code is formatted: `docker-compose exec improvisator npm run format`
+- [ ] No console errors or warnings
+- [ ] ESLint passes: `docker-compose exec improvisator arty libraries or external APIs (mock them)
+
+**Mobile Package** (`mobile/`):
+- ✅ Component integration tests (React Native Testing Library)
+- ✅ Test navigation and screen behavior
+- ✅ Mock native APIs
+- ❌ Don't test React Native internals
+
+### Running Tests
+
+```bash
+# Test everything
+npm run test
+
+# Watch mode during development
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+
+# From specific package
+cd core && npm run test
+```
+
+## Before Committing
+
+- [ ] All new code has tests
+- [ ] All tests pass: `npm run test`
+- [ ] Core package has >90% coverage: `npm run test:coverage`
+- [ ] Code is formatted: `npm run lint:fix && npm run format:fix`
+- [ ] No console errors or warnings
+- [ ] ESLint passes: `npm run lint`
+
+## Decision-Making
+
+When deciding where code goes, ask:
+- "Does this depend on UI rendering?" → Web/Mobile
+- "Could another platform reuse this?" → Core
+- "Is this a business rule?" → Core
+- "Is this a presentation choice?" → Web/Mobile
+
+Keep it simple. When in doubt, start with the simplest solution and refactor if needed.

@@ -1,0 +1,19 @@
+services:
+  improvisator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: improvisator-dev
+    ports:
+      - "54321:54321"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/core/node_modules
+      - /app/web/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_PORT=54321
+    command: sh -c "cd /app/web && npm run dev"
+    stdin_open: true
+    tty: true
