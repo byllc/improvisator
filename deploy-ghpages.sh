@@ -27,7 +27,7 @@ rsync -a --delete --exclude='.git' "$DIST/" "$TMP/"
 cd "$TMP"
 git add -A
 git commit -m "deploy $(date '+%Y-%m-%d %H:%M')" || echo "Nothing to commit"
-git push origin $BRANCH
+git push origin $BRANCH --force
 cd -
 
 git worktree remove "$TMP" --force
