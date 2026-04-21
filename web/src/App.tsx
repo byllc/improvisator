@@ -112,7 +112,7 @@ function App() {
     <div className="App">
       <header>
         <h1>🎭 Improvisator</h1>
-        <p>Your practice partner for improv comedy</p>
+        <p>Improv party games</p>
         {!isOnline && <div className="offline-banner">Offline Mode</div>}
       </header>
 

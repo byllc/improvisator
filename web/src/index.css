@@ -25,21 +25,34 @@ body {
 }
 
 header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #3d4f9e 0%, #4a2d6e 100%);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 2rem 1rem 3rem;
   text-align: center;
   position: relative;
 }
 
+header::after {
+  content: '';
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background: #242424;
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+
 header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
 }
 
 header p {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 1rem;
+  opacity: 0.75;
 }
 
 .offline-indicator {
@@ -270,6 +283,10 @@ main {
   :root {
     color: #213547;
     background-color: #ffffff;
+  }
+
+  header::after {
+    background: #ffffff;
   }
 
   .rules {
