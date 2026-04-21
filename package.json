@@ -13,6 +13,7 @@
     "build:core": "npm run build -w core",
     "build:web": "npm run build:core && npm run build -w web",
     "build:all": "npm run build:core && npm run build -w web",
+    "build:ghpages": "npm run build:core && VITE_BASE=/improvisator/ npm run build -w @improvisator/web",
     "dev": "npm run dev -w web",
     "test": "npm run test -ws",
     "test:watch": "npm run test:watch -w core && npm run test:watch -w web",

@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
+const base = process.env.VITE_BASE ?? '/';
+
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      strategies: 'injectManifest',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
         globIgnores: ['**/node_modules/**/*'],
@@ -20,8 +22,8 @@ export default defineConfig({
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
-        scope: '/',
-        start_url: '/',
+        scope: base,
+        start_url: base,
         icons: [
           {
             src: '/icon-192.png',
