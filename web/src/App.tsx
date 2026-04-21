@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { HeadlineGame, WhoTheFuckGame, LawyerGame, WhereTheFuckGame } from '@improvisator/core'
+import { headlines } from './data/headlines'
 
 type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf'
 
@@ -20,15 +21,7 @@ function App() {
 
   useEffect(() => {
     // Initialize games
-    const newHeadlineGame = new HeadlineGame({
-      headlines: [
-        'Local Man Discovers Sentient Toaster',
-        'Mayor Declares All Tuesdays Optional',
-        'Cat Runs for City Council',
-        'Coffee Voted Most Important Food Group',
-        'Time Travel Banned by DMV',
-      ]
-    })
+    const newHeadlineGame = new HeadlineGame({ headlines })
     setHeadlineGame(newHeadlineGame)
 
     const newWtfGame = new WhoTheFuckGame()
