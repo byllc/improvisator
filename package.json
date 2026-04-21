@@ -9,7 +9,6 @@
     "mobile"
   ],
   "scripts": {
-    "install": "npm install -ws",
     "build": "npm run build -ws",
     "build:core": "npm run build -w core",
     "build:web": "npm run build:core && npm run build -w web",
