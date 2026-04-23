@@ -6,11 +6,49 @@ import {
   WhereTheFuckGame,
   RockPaperScissorsGame,
   type RockPaperScissorsChoice,
-  type RockPaperScissorsRound
+  type RockPaperScissorsRound,
+  PressConferenceGame,
+  EmotionRouletteGame,
+  BadAdviceGame
 } from '@improvisator/core'
 import { headlines } from './data/headlines'
 
-type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf' | 'rps'
+type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf' | 'rps' | 'pressconference' | 'emotionroulette' | 'badadvice'
+
+type RuleItem = { text: string; subItems?: string[] }
+
+function parseRules(rules: string): RuleItem[] {
+  const items: RuleItem[] = []
+  for (const line of rules.split('\n').slice(1)) {
+    if (!line.trim()) continue
+    if (/^\s+-/.test(line)) {
+      if (items.length > 0) {
+        if (!items[items.length - 1].subItems) items[items.length - 1].subItems = []
+        items[items.length - 1].subItems!.push(line.replace(/^\s*-\s*/, '').trim())
+      }
+    } else {
+      items.push({ text: line.replace(/^\d+\.\s*/, '').trim() })
+    }
+  }
+  return items
+}
+
+function RulesList({ rules }: { rules: string }) {
+  return (
+    <ol className="rules-list">
+      {parseRules(rules).map((item, i) => (
+        <li key={i}>
+          {item.text}
+          {item.subItems && (
+            <ul className="rules-sublist">
+              {item.subItems.map((sub, j) => <li key={j}>{sub}</li>)}
+            </ul>
+          )}
+        </li>
+      ))}
+    </ol>
+  )
+}
 
 function App() {
   const [headlineGame, setHeadlineGame] = useState<HeadlineGame | null>(null)
@@ -18,11 +56,17 @@ function App() {
   const [lawyerGame, setLawyerGame] = useState<LawyerGame | null>(null)
   const [whereTfGame, setWhereTfGame] = useState<WhereTheFuckGame | null>(null)
   const [rpsGame, setRpsGame] = useState<RockPaperScissorsGame | null>(null)
+  const [pressConferenceGame, setPressConferenceGame] = useState<PressConferenceGame | null>(null)
+  const [emotionRouletteGame, setEmotionRouletteGame] = useState<EmotionRouletteGame | null>(null)
+  const [badAdviceGame, setBadAdviceGame] = useState<BadAdviceGame | null>(null)
   const [activeGame, setActiveGame] = useState<GameType>('headline')
   const [headline, setHeadline] = useState<string>('')
   const [character, setCharacter] = useState<string>('')
   const [hotTake, setHotTake] = useState<string>('')
   const [scenario, setScenario] = useState<string>('')
+  const [pressConferenceScenario, setPressConferenceScenario] = useState<string>('')
+  const [emotionRoulettePrompt, setEmotionRoulettePrompt] = useState<string>('')
+  const [badAdviceProblem, setBadAdviceProblem] = useState<string>('')
   const [score, setScore] = useState<number>(0)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [isWtfHidden, setIsWtfHidden] = useState<boolean>(false)
@@ -46,6 +90,15 @@ function App() {
 
     const newRpsGame = new RockPaperScissorsGame()
     setRpsGame(newRpsGame)
+
+    const newPressConferenceGame = new PressConferenceGame()
+    setPressConferenceGame(newPressConferenceGame)
+
+    const newEmotionRouletteGame = new EmotionRouletteGame()
+    setEmotionRouletteGame(newEmotionRouletteGame)
+
+    const newBadAdviceGame = new BadAdviceGame()
+    setBadAdviceGame(newBadAdviceGame)
   }, [])
 
   useEffect(() => {
@@ -100,6 +153,9 @@ function App() {
     else if (activeGame === 'lawyer') currentGame = lawyerGame
     else if (activeGame === 'wheretf') currentGame = whereTfGame
     else if (activeGame === 'rps') currentGame = rpsGame
+    else if (activeGame === 'pressconference') currentGame = pressConferenceGame
+    else if (activeGame === 'emotionroulette') currentGame = emotionRouletteGame
+    else if (activeGame === 'badadvice') currentGame = badAdviceGame
     
     if (!currentGame || !currentGame.validateScore(val)) return
     setScore(val)
@@ -116,11 +172,35 @@ function App() {
     setIsWhereTfHidden(false)
     setRpsChoice('')
     setRpsRound(null)
+    setPressConferenceScenario('')
+    setEmotionRoulettePrompt('')
+    setBadAdviceProblem('')
   }
 
   const handleRpsChoiceSelect = (choice: RockPaperScissorsChoice) => {
     setRpsChoice(choice)
     setRpsRound(null)
+    setScore(0)
+  }
+
+  const handleNewBadAdviceProblem = () => {
+    if (!badAdviceGame) return
+    const newProblem = badAdviceGame.getRandomProblem()
+    setBadAdviceProblem(newProblem)
+    setScore(0)
+  }
+
+  const handleNewEmotionRoulettePrompt = () => {
+    if (!emotionRouletteGame) return
+    const newPrompt = emotionRouletteGame.getRandomPrompt()
+    setEmotionRoulettePrompt(newPrompt)
+    setScore(0)
+  }
+
+  const handleNewPressConferenceScenario = () => {
+    if (!pressConferenceGame) return
+    const newScenario = pressConferenceGame.getRandomScenario()
+    setPressConferenceScenario(newScenario)
     setScore(0)
   }
 
@@ -140,7 +220,7 @@ function App() {
       </header>
 
       <main>
-        {!headlineGame || !wtfGame || !lawyerGame || !whereTfGame || !rpsGame ? (
+        {!headlineGame || !wtfGame || !lawyerGame || !whereTfGame || !rpsGame || !pressConferenceGame || !emotionRouletteGame || !badAdviceGame ? (
           <div className="loading">Initializing games...</div>
         ) : (
           <>
@@ -157,6 +237,9 @@ function App() {
                 <option value="lawyer">Lawyer</option>
                 <option value="wheretf">Where The Fuck?</option>
                 <option value="rps">Rock Paper Scissors</option>
+                <option value="pressconference">Press Conference</option>
+                <option value="emotionroulette">Emotion Roulette</option>
+                <option value="badadvice">Bad Advice</option>
               </select>
             </div>
 
@@ -164,7 +247,7 @@ function App() {
               <div className="game-container">
                 <section className="rules">
                   <h2>Headline Game</h2>
-                  <p>{headlineGame.getRules()}</p>
+                  <RulesList rules={headlineGame.getRules()} />
                 </section>
 
                 <section className="game-play">
@@ -196,7 +279,7 @@ function App() {
               <div className="game-container">
                 <section className="rules">
                   <h2>Who The Fuck?</h2>
-                  <p>Perform as your character. Other players try to guess who you are. Click "Hide Character" before you start, then "Reveal" after you perform.</p>
+                  <RulesList rules={wtfGame.getRules()} />
                 </section>
 
                 <section className="game-play">
@@ -250,7 +333,7 @@ function App() {
               <div className="game-container">
                 <section className="rules">
                   <h2>Lawyer</h2>
-                  <p>{lawyerGame.getRules()}</p>
+                  <RulesList rules={lawyerGame.getRules()} />
                 </section>
 
                 <section className="game-play">
@@ -284,8 +367,7 @@ function App() {
               <div className="game-container">
                 <section className="rules">
                   <h2>Where The Fuck?</h2>
-                  <p>Perform your scenario. Other players guess WHO (profession), WHAT (disposition), and WHERE (location).</p>
-                  <p><strong>Scoring:</strong> Guessers get 1 point each for who/what/where, OR 5 points for all three. Improviser gets 5 points for each element everyone guesses correctly.</p>
+                  <RulesList rules={whereTfGame.getRules()} />
                 </section>
 
                 <section className="game-play">
@@ -341,7 +423,7 @@ function App() {
               <div className="game-container">
                 <section className="rules">
                   <h2>Rock Paper Scissors (Justify Edition)</h2>
-                  <p>{rpsGame.getRules()}</p>
+                  <RulesList rules={rpsGame.getRules()} />
                 </section>
 
                 <section className="game-play">
@@ -396,6 +478,115 @@ function App() {
                 <footer className="game-footer">
                   <small>
                     {rpsGame.getThingCount().toLocaleString()} random things available
+                  </small>
+                </footer>
+              </div>
+            )}
+
+            {activeGame === 'badadvice' && (
+              <div className="game-container">
+                <section className="rules">
+                  <h2>Bad Advice</h2>
+                  <RulesList rules={badAdviceGame.getRules()} />
+                </section>
+
+                <section className="game-play">
+                  {badAdviceProblem ? (
+                    <>
+                      <div className="headline-box">
+                        <h3>The Problem:</h3>
+                        <p className="headline">{badAdviceProblem}</p>
+                      </div>
+
+                      <button onClick={handleNewBadAdviceProblem} className="btn btn-primary">
+                        Next Problem
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleNewBadAdviceProblem} className="btn btn-primary btn-large">
+                      Let's Play 🚀
+                    </button>
+                  )}
+                </section>
+
+                <footer className="game-footer">
+                  <small>
+                    {badAdviceGame.getProblemCount()} problems to solve terribly
+                  </small>
+                </footer>
+              </div>
+            )}
+
+            {activeGame === 'emotionroulette' && (
+              <div className="game-container">
+                <section className="rules">
+                  <h2>Emotion Roulette</h2>
+                  <RulesList rules={emotionRouletteGame.getRules()} />
+                </section>
+
+                <section className="game-play">
+                  {emotionRoulettePrompt ? (
+                    <>
+                      <div className="headline-box">
+                        <p className="headline">{emotionRoulettePrompt}</p>
+                        <p className="character-details">
+                          Action: {emotionRouletteGame.getCurrentAction()}<br />
+                          Emotion: {emotionRouletteGame.getCurrentEmotion()}
+                        </p>
+                      </div>
+
+                      <button onClick={handleNewEmotionRoulettePrompt} className="btn btn-primary">
+                        Spin Again
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleNewEmotionRoulettePrompt} className="btn btn-primary btn-large">
+                      Let's Play 🚀
+                    </button>
+                  )}
+                </section>
+
+                <footer className="game-footer">
+                  <small>
+                    {emotionRouletteGame.getCombinationCount().toLocaleString()} unique combinations
+                  </small>
+                </footer>
+              </div>
+            )}
+
+            {activeGame === 'pressconference' && (
+              <div className="game-container">
+                <section className="rules">
+                  <h2>Press Conference</h2>
+                  <RulesList rules={pressConferenceGame.getRules()} />
+                </section>
+
+                <section className="game-play">
+                  {pressConferenceScenario ? (
+                    <>
+                      <div className="headline-box">
+                        <h3>Breaking News:</h3>
+                        <p className="headline">{pressConferenceScenario}</p>
+                        <p className="character-details">
+                          Celebrity: {pressConferenceGame.getCurrentCelebrity()}<br />
+                          The Incident: {pressConferenceGame.getCurrentEvent()}
+                        </p>
+                      </div>
+
+                      <button onClick={handleNewPressConferenceScenario} className="btn btn-primary">
+                        New Scandal
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleNewPressConferenceScenario} className="btn btn-primary btn-large">
+                      Let's Play 🚀
+                    </button>
+                  )}
+                </section>
+
+                <footer className="game-footer">
+                  <small>
+                    {pressConferenceGame.getScenarioCount().toLocaleString()} unique scandal combinations
                   </small>
                 </footer>
               </div>

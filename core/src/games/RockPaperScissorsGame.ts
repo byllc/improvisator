@@ -88,8 +88,8 @@ export class RockPaperScissorsGame {
 1. Pick rock, paper, or scissors
 2. The app gives a random thing from a list of ${this.things.length}
 3. You get a statement in one of two forms:
-   - <thing> beats <your choice>
-   - <your choice> beats <thing>
+   - [thing] beats [your choice]
+   - [your choice] beats [thing]
 4. You have ${this.timeoutSeconds} seconds to justify why that is true`;
   }
 
