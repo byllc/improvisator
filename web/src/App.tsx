@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react'
-import { HeadlineGame, WhoTheFuckGame, LawyerGame, WhereTheFuckGame } from '@improvisator/core'
+import {
+  HeadlineGame,
+  WhoTheFuckGame,
+  LawyerGame,
+  WhereTheFuckGame,
+  RockPaperScissorsGame,
+  type RockPaperScissorsChoice,
+  type RockPaperScissorsRound
+} from '@improvisator/core'
 import { headlines } from './data/headlines'
 
-type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf'
+type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf' | 'rps'
 
 function App() {
   const [headlineGame, setHeadlineGame] = useState<HeadlineGame | null>(null)
   const [wtfGame, setWtfGame] = useState<WhoTheFuckGame | null>(null)
   const [lawyerGame, setLawyerGame] = useState<LawyerGame | null>(null)
   const [whereTfGame, setWhereTfGame] = useState<WhereTheFuckGame | null>(null)
+  const [rpsGame, setRpsGame] = useState<RockPaperScissorsGame | null>(null)
   const [activeGame, setActiveGame] = useState<GameType>('headline')
   const [headline, setHeadline] = useState<string>('')
   const [character, setCharacter] = useState<string>('')
@@ -18,6 +27,8 @@ function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [isWtfHidden, setIsWtfHidden] = useState<boolean>(false)
   const [isWhereTfHidden, setIsWhereTfHidden] = useState<boolean>(false)
+  const [rpsChoice, setRpsChoice] = useState<RockPaperScissorsChoice | ''>('')
+  const [rpsRound, setRpsRound] = useState<RockPaperScissorsRound | null>(null)
 
   useEffect(() => {
     // Initialize games
@@ -32,6 +43,9 @@ function App() {
 
     const newWhereTfGame = new WhereTheFuckGame()
     setWhereTfGame(newWhereTfGame)
+
+    const newRpsGame = new RockPaperScissorsGame()
+    setRpsGame(newRpsGame)
   }, [])
 
   useEffect(() => {
@@ -85,6 +99,7 @@ function App() {
     else if (activeGame === 'wtf') currentGame = wtfGame
     else if (activeGame === 'lawyer') currentGame = lawyerGame
     else if (activeGame === 'wheretf') currentGame = whereTfGame
+    else if (activeGame === 'rps') currentGame = rpsGame
     
     if (!currentGame || !currentGame.validateScore(val)) return
     setScore(val)
@@ -99,6 +114,21 @@ function App() {
     setScore(0)
     setIsWtfHidden(false)
     setIsWhereTfHidden(false)
+    setRpsChoice('')
+    setRpsRound(null)
+  }
+
+  const handleRpsChoiceSelect = (choice: RockPaperScissorsChoice) => {
+    setRpsChoice(choice)
+    setRpsRound(null)
+    setScore(0)
+  }
+
+  const handleGenerateRpsRound = () => {
+    if (!rpsGame || !rpsChoice) return
+    const round = rpsGame.generateRound(rpsChoice)
+    setRpsRound(round)
+    setScore(0)
   }
 
   return (
@@ -110,7 +140,7 @@ function App() {
       </header>
 
       <main>
-        {!headlineGame || !wtfGame || !lawyerGame || !whereTfGame ? (
+        {!headlineGame || !wtfGame || !lawyerGame || !whereTfGame || !rpsGame ? (
           <div className="loading">Initializing games...</div>
         ) : (
           <>
@@ -126,6 +156,7 @@ function App() {
                 <option value="wtf">Who The Fuck?</option>
                 <option value="lawyer">Lawyer</option>
                 <option value="wheretf">Where The Fuck?</option>
+                <option value="rps">Rock Paper Scissors</option>
               </select>
             </div>
 
@@ -301,6 +332,70 @@ function App() {
                 <footer className="game-footer">
                   <small>
                     {whereTfGame.getScenarioCount().toLocaleString()} unique scenario combinations
+                  </small>
+                </footer>
+              </div>
+            )}
+
+            {activeGame === 'rps' && (
+              <div className="game-container">
+                <section className="rules">
+                  <h2>Rock Paper Scissors (Justify Edition)</h2>
+                  <p>{rpsGame.getRules()}</p>
+                </section>
+
+                <section className="game-play">
+                  <div className="headline-box">
+                    <h3>Step 1: Pick Your Thing</h3>
+                    <div className="button-group">
+                      <button
+                        onClick={() => handleRpsChoiceSelect('rock')}
+                        className={`btn ${rpsChoice === 'rock' ? 'btn-rps-selected' : 'btn-primary'}`}
+                        aria-pressed={rpsChoice === 'rock'}
+                      >
+                        Rock
+                      </button>
+                      <button
+                        onClick={() => handleRpsChoiceSelect('paper')}
+                        className={`btn ${rpsChoice === 'paper' ? 'btn-rps-selected' : 'btn-primary'}`}
+                        aria-pressed={rpsChoice === 'paper'}
+                      >
+                        Paper
+                      </button>
+                      <button
+                        onClick={() => handleRpsChoiceSelect('scissors')}
+                        className={`btn ${rpsChoice === 'scissors' ? 'btn-rps-selected' : 'btn-primary'}`}
+                        aria-pressed={rpsChoice === 'scissors'}
+                      >
+                        Scissors
+                      </button>
+                    </div>
+
+                    <p className="rps-choice-indicator">
+                      {rpsChoice ? `Your choice: ${rpsChoice.toUpperCase()}` : 'No choice selected yet'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleGenerateRpsRound}
+                    className="btn btn-primary btn-large"
+                    disabled={!rpsChoice}
+                  >
+                    Generate Challenge
+                  </button>
+
+                  {rpsRound && (
+                    <div className="headline-box">
+                      <h3>Your Prompt</h3>
+                      <p className="headline">{rpsRound.statement}</p>
+                      <p className="character-details">Now justify why that is true.</p>
+                    </div>
+                  )}
+                </section>
+
+                <footer className="game-footer">
+                  <small>
+                    {rpsGame.getThingCount().toLocaleString()} random things available
                   </small>
                 </footer>
               </div>

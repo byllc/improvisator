@@ -181,6 +181,11 @@ main {
   color: #fff;
   line-height: 1.4;
 }
+.character-details {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
 
 .scoring-section {
   display: flex;
@@ -233,6 +238,13 @@ main {
   transform: translateY(0);
 }
 
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-secondary {
   background: #764ba2;
   color: white;
@@ -242,6 +254,25 @@ main {
 .btn-secondary:hover {
   background: rgba(102, 126, 234, 0.2);
   border-color: #764ba2;
+}
+
+.btn-rps-selected {
+  background: #f4d35e;
+  color: #1f1f1f;
+  border: 2px solid #f7b801;
+  box-shadow: 0 0 0 3px rgba(247, 184, 1, 0.25);
+}
+
+.btn-rps-selected:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(247, 184, 1, 0.3);
+}
+
+.rps-choice-indicator {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
 .btn-large {

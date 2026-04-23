@@ -1,5 +1,27 @@
 # Copilot Instructions for Improvisator
 
+## Quick Commands
+
+Use these first when the user asks to run, build, test, or publish.
+
+```bash
+# Start development server
+docker-compose up
+
+# Run core tests
+docker-compose exec improvisator npm run test -w core
+
+# Build core + web for normal production
+docker-compose exec improvisator npm run build:core
+docker-compose exec improvisator npm run build:web
+
+# Build for GitHub Pages (correct base path)
+docker-compose exec improvisator npm run build:ghpages
+
+# Deploy to GitHub Pages (gh-pages branch)
+./deploy-ghpages.sh
+```
+
 ## Core Principles
 
 1. **Docker-First Development**: All development and deployment happens in Docker containers. Never run `npm install` or `npm run dev` directly on the host.
@@ -37,7 +59,139 @@ docker-compose up
 
 **Never run npm directly on host** - always use `docker-compose exec` or let docker-compose handle it.
 
+### Build and Run the App (Authoritative Commands)
+
+When Copilot is asked to build or run the app, use these commands exactly.
+
+**Run app in development** (hot reload):
+
+```bash
+docker-compose up
+```
+
+- App URL: `http://localhost:54321`
+
+**Build app for production**:
+
+```bash
+docker-compose exec improvisator npm run build:core
+docker-compose exec improvisator npm run build:web
+```
+
+**Build everything in workspace**:
+
+```bash
+docker-compose exec improvisator npm run build
+```
+
+**Run tests before/after build**:
+
+```bash
+docker-compose exec improvisator npm run test -w core
+docker-compose exec improvisator npm run build -w core
+docker-compose exec improvisator npm run build -w web
+```
+
+**Rule for Copilot responses**:
+
+- If user asks to run/build, default to Docker commands above.
+- Do not suggest host commands like `npm run dev` from macOS shell.
+- If command fails because container is not running, start with `docker-compose up`.
+
+### Build for GitHub Pages
+
+When asked to build for GitHub Pages, use the repository's GitHub Pages build flow (with base path).
+
+**Build artifact for Pages**:
+
+```bash
+docker-compose exec improvisator npm run build:ghpages
+```
+
+- This sets `VITE_BASE=/improvisator/` and builds to `web/dist`.
+- Always use this command for Pages builds instead of plain `build:web`.
+
+**Deploy to gh-pages branch**:
+
+```bash
+./deploy-ghpages.sh
+```
+
+- The script builds in Docker, syncs `web/dist` to `gh-pages`, and force-pushes.
+- Final site URL: `https://byllc.github.io/improvisator/`
+
+**Rule for Copilot responses (Pages)**:
+
+- If user asks for GitHub Pages build, default to `docker-compose exec improvisator npm run build:ghpages`.
+- If user asks to publish/deploy, use `./deploy-ghpages.sh`.
+
 ## Architecture Guidelines
+
+### Building a New App (Required Flow)
+
+Use this flow whenever creating a new app target (for example, a second web client, admin app, or mobile app).
+
+### 1) Create the app folder
+
+- Create a top-level folder for the app (example: `admin/` or `mobile/`)
+- Add package basics:
+  - `package.json`
+  - `tsconfig.json`
+  - app entry points (`src/main.tsx`, `src/App.tsx`, etc. for web)
+
+### 2) Keep shared logic in core
+
+- Do not duplicate game logic in the app package
+- Put reusable logic in `core/src/`
+- Export from `core/src/index.ts`
+- Import from app code via the core package API
+
+### 3) Wire the app into Docker-first workflow
+
+- Ensure dependencies are installed inside the container
+- Run app commands through Docker only, for example:
+
+```bash
+docker-compose exec improvisator npm --prefix core run build
+docker-compose exec improvisator npm --prefix <new-app-folder> run build
+docker-compose exec improvisator npm --prefix <new-app-folder> run test
+docker-compose exec improvisator npm --prefix <new-app-folder> run lint
+```
+
+- If dependency changes were made, rebuild container:
+
+```bash
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
+```
+
+### 4) Minimum scripts required in new app package.json
+
+Every new app must define at least:
+
+- `build`
+- `test`
+- `lint`
+- `dev` (if interactive development server exists)
+
+### 5) Verify before opening PR
+
+From Docker, verify:
+
+- Core builds successfully
+- New app builds successfully
+- Tests pass for core and new app
+- Lint passes for new app
+- New app imports shared logic from core (no duplicated business logic)
+
+### 6) New app acceptance checklist
+
+- [ ] App code is UI/platform-specific only
+- [ ] Business/game logic lives in core
+- [ ] No framework imports in core
+- [ ] Docker-only commands documented and used
+- [ ] Build, test, and lint scripts exist and pass
 
 ### Directory Structure
 - `core/` - Framework-agnostic business logic, game rules, utilities (used by both PWA and mobile)

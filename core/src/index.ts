@@ -8,3 +8,9 @@ export { HeadlineGame, type HeadlineGameConfig } from './games/HeadlineGame';
 export { WhoTheFuckGame, type WhoTheFuckGameConfig } from './games/WhoTheFuckGame';
 export { LawyerGame, type LawyerGameConfig } from './games/LawyerGame';
 export { WhereTheFuckGame, type WhereTheFuckGameConfig } from './games/WhereTheFuckGame';
+export {
+	RockPaperScissorsGame,
+	type RockPaperScissorsGameConfig,
+	type RockPaperScissorsChoice,
+	type RockPaperScissorsRound
+} from './games/RockPaperScissorsGame';
