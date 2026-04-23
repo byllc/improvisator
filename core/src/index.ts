@@ -17,3 +17,4 @@ export {
 export { PressConferenceGame, type PressConferenceGameConfig } from './games/PressConferenceGame';
 export { EmotionRouletteGame, type EmotionRouletteGameConfig } from './games/EmotionRouletteGame';
 export { BadAdviceGame, type BadAdviceGameConfig } from './games/BadAdviceGame';
+export { SuggestionGame, type SuggestionGameConfig } from './games/SuggestionGame';

@@ -9,11 +9,13 @@ import {
   type RockPaperScissorsRound,
   PressConferenceGame,
   EmotionRouletteGame,
-  BadAdviceGame
+  BadAdviceGame,
+  SuggestionGame
 } from '@improvisator/core'
 import { headlines } from './data/headlines'
+import { sceneSuggestions } from './data/sceneSuggestions'
 
-type GameType = 'headline' | 'wtf' | 'lawyer' | 'wheretf' | 'rps' | 'pressconference' | 'emotionroulette' | 'badadvice'
+type GameType = 'headline' | 'suggestion' | 'wtf' | 'lawyer' | 'wheretf' | 'rps' | 'pressconference' | 'emotionroulette' | 'badadvice'
 
 type RuleItem = { text: string; subItems?: string[] }
 
@@ -52,6 +54,7 @@ function RulesList({ rules }: { rules: string }) {
 
 function App() {
   const [headlineGame, setHeadlineGame] = useState<HeadlineGame | null>(null)
+  const [suggestionGame, setSuggestionGame] = useState<SuggestionGame | null>(null)
   const [wtfGame, setWtfGame] = useState<WhoTheFuckGame | null>(null)
   const [lawyerGame, setLawyerGame] = useState<LawyerGame | null>(null)
   const [whereTfGame, setWhereTfGame] = useState<WhereTheFuckGame | null>(null)
@@ -59,8 +62,9 @@ function App() {
   const [pressConferenceGame, setPressConferenceGame] = useState<PressConferenceGame | null>(null)
   const [emotionRouletteGame, setEmotionRouletteGame] = useState<EmotionRouletteGame | null>(null)
   const [badAdviceGame, setBadAdviceGame] = useState<BadAdviceGame | null>(null)
-  const [activeGame, setActiveGame] = useState<GameType>('headline')
+  const [activeGame, setActiveGame] = useState<GameType>('suggestion')
   const [headline, setHeadline] = useState<string>('')
+  const [suggestion, setSuggestion] = useState<string>('')
   const [character, setCharacter] = useState<string>('')
   const [hotTake, setHotTake] = useState<string>('')
   const [scenario, setScenario] = useState<string>('')
@@ -78,6 +82,9 @@ function App() {
     // Initialize games
     const newHeadlineGame = new HeadlineGame({ headlines })
     setHeadlineGame(newHeadlineGame)
+
+    const newSuggestionGame = new SuggestionGame({ suggestions: sceneSuggestions })
+    setSuggestionGame(newSuggestionGame)
 
     const newWtfGame = new WhoTheFuckGame()
     setWtfGame(newWtfGame)
@@ -122,6 +129,13 @@ function App() {
     setScore(0)
   }
 
+  const handleNewSuggestion = () => {
+    if (!suggestionGame) return
+    const newSuggestion = suggestionGame.getRandomSuggestion()
+    setSuggestion(newSuggestion)
+    setScore(0)
+  }
+
   const handleNewCharacter = () => {
     if (!wtfGame) return
     const newCharacter = wtfGame.getRandomCharacter()
@@ -149,6 +163,7 @@ function App() {
     const val = parseInt(e.target.value, 10)
     let currentGame = null
     if (activeGame === 'headline') currentGame = headlineGame
+    else if (activeGame === 'suggestion') currentGame = suggestionGame
     else if (activeGame === 'wtf') currentGame = wtfGame
     else if (activeGame === 'lawyer') currentGame = lawyerGame
     else if (activeGame === 'wheretf') currentGame = whereTfGame
@@ -164,6 +179,7 @@ function App() {
   const switchGame = (gameType: GameType) => {
     setActiveGame(gameType)
     setHeadline('')
+    setSuggestion('')
     setCharacter('')
     setHotTake('')
     setScenario('')
@@ -220,7 +236,7 @@ function App() {
       </header>
 
       <main>
-        {!headlineGame || !wtfGame || !lawyerGame || !whereTfGame || !rpsGame || !pressConferenceGame || !emotionRouletteGame || !badAdviceGame ? (
+        {!headlineGame || !suggestionGame || !wtfGame || !lawyerGame || !whereTfGame || !rpsGame || !pressConferenceGame || !emotionRouletteGame || !badAdviceGame ? (
           <div className="loading">Initializing games...</div>
         ) : (
           <>
@@ -232,6 +248,7 @@ function App() {
                 onChange={(e) => switchGame(e.target.value as GameType)}
                 className="game-select"
               >
+                <option value="suggestion">Improv</option>
                 <option value="headline">Headline Game</option>
                 <option value="wtf">Who The Fuck?</option>
                 <option value="lawyer">Lawyer</option>
@@ -271,6 +288,39 @@ function App() {
 
                 <footer className="game-footer">
                   <small>{headlineGame.getTimeout()}s time limit per headline</small>
+                </footer>
+              </div>
+            )}
+
+            {activeGame === 'suggestion' && (
+              <div className="game-container">
+                <section className="rules">
+                  <h2>Improv</h2>
+                  <RulesList rules={suggestionGame.getRules()} />
+                </section>
+
+                <section className="game-play">
+                  {suggestion ? (
+                    <>
+                      <div className="headline-box">
+                        <h3>Your Suggestion:</h3>
+                        <p className="headline">{suggestion}</p>
+                        <p className="character-details">The whole group improvises the scene from this shared starting point.</p>
+                      </div>
+
+                      <button onClick={handleNewSuggestion} className="btn btn-primary">
+                        Get Another Suggestion
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleNewSuggestion} className="btn btn-primary btn-large">
+                      Start With a Suggestion
+                    </button>
+                  )}
+                </section>
+
+                <footer className="game-footer">
+                  <small>{suggestionGame.getSuggestionCount().toLocaleString()} simple scene starters</small>
                 </footer>
               </div>
             )}
